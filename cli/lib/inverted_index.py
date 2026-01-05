@@ -18,13 +18,13 @@ class InvertedIndex:
             self.index[token].add(doc_id)
 
     def get_documents(self, term: str) -> list[int]:
-        documents = []
+        documents_set: set[int] = set()
         query_tokens = tokenize_str(term)
 
         for token in query_tokens:
-            documents.extend(self.index[token])
+            documents_set |= self.index.get(token, set())
 
-        return sorted(documents)
+        return sorted(documents_set)
 
     def build(self) -> None:
         for movie in load_movies():
@@ -47,9 +47,9 @@ class InvertedIndex:
                 f"Files not found: {CACHE_INDEX_PKL}, {CACHE_DOCMAP_PKL}"
             )
 
-        with open(CACHE_INDEX_PKL, "br") as f:
+        with open(CACHE_INDEX_PKL, "rb") as f:
             data = pickle.load(f)
             self.index = defaultdict(set, data)  # reconvert dict back to default dict
 
-        with open(CACHE_DOCMAP_PKL, "br") as f:
+        with open(CACHE_DOCMAP_PKL, "rb") as f:
             self.docmap = pickle.load(f)
