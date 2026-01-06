@@ -23,7 +23,7 @@ def build_index() -> None:
     index_is_loaded = False
 
 
-def count_term(doc_id: int, term: str) -> None:
+def calculate_tf(doc_id: int, term: str) -> None:
     if not index_is_loaded:
         load_index()
 
@@ -37,6 +37,14 @@ def calculate_idf(term: str) -> None:
 
     idf = search_index.get_idf(term)
     print(f"Inverse document frequency of '{term}': {idf:.2f}")
+
+
+def calculate_tf_idf(doc_id: int, term: str) -> None:
+    if not index_is_loaded:
+        load_index()
+
+    tf_idf = search_index.get_tf_idf(doc_id, term)
+    print(f"TF-IDF score of '{term}' in document '{doc_id}': {tf_idf:.2f}")
 
 
 def index_search(query: str) -> list[str] | None:

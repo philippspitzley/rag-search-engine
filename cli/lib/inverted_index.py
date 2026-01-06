@@ -42,7 +42,14 @@ class InvertedIndex:
         token = tokenize_single_str(term)
         total_doc_count = len(self.docmap)
         term_match_doc_count = len(self.index[token])
+
         return math.log((total_doc_count + 1) / (term_match_doc_count + 1))
+
+    def get_tf_idf(self, doc_id: int, term: str) -> float:
+        tf = self.get_tf(doc_id, term)
+        idf = self.get_idf(term)
+
+        return tf * idf
 
     def build(self) -> None:
         for movie in load_movies():
