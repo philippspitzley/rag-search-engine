@@ -1,7 +1,7 @@
 import pickle
-from collections import defaultdict
+from collections import Counter, defaultdict
 
-from config import CACHE_DIR, CACHE_DOCMAP_PKL, CACHE_INDEX_PKL
+from config import CACHE_DIR, CACHE_DOCMAP_PKL, CACHE_INDEX_PKL, CACHE_TERM_FREQUENCIES
 from lib.tokenize import tokenize_str
 from lib.utils import load_movies
 
@@ -10,21 +10,39 @@ class InvertedIndex:
     def __init__(self) -> None:
         self.index: dict[str, set[int]] = defaultdict(set)
         self.docmap: dict[int, dict] = {}
+        self.term_frequencies: dict[int, Counter[str]] = defaultdict(Counter)
 
     def __add_document(self, doc_id: int, text: str) -> None:
         tokens = tokenize_str(text)
 
         for token in tokens:
+            self.term_frequencies[doc_id][token] += 1
             self.index[token].add(doc_id)
 
     def get_documents(self, term: str) -> list[int]:
         documents_set: set[int] = set()
         query_tokens = tokenize_str(term)
 
-        for token in query_tokens:
+        for token in set(query_tokens):
             documents_set |= self.index.get(token, set())
 
         return sorted(documents_set)
+
+    def get_tf(self, doc_id: int, term: str) -> int:
+        tokens = tokenize_str(term)
+
+        if len(tokens) == 1:
+            token = tokens[0]
+
+        if len(tokens) > 1:
+            raise ValueError("Only one word/token is allowed")
+
+        document_counters = self.term_frequencies.get(doc_id)
+
+        if document_counters is None:
+            return 0
+
+        return document_counters.get(token, 0)
 
     def build(self) -> None:
         for movie in load_movies():
@@ -41,6 +59,11 @@ class InvertedIndex:
         with open(CACHE_DOCMAP_PKL, "wb") as f:
             pickle.dump(self.docmap, f)
 
+        with open(CACHE_TERM_FREQUENCIES, "wb") as f:
+            pickle.dump(
+                dict(self.term_frequencies), f
+            )  # convert default dict to nomal dict
+
     def load(self) -> None:
         if not CACHE_INDEX_PKL.exists() or not CACHE_DOCMAP_PKL.exists():
             raise FileNotFoundError(
@@ -53,3 +76,9 @@ class InvertedIndex:
 
         with open(CACHE_DOCMAP_PKL, "rb") as f:
             self.docmap = pickle.load(f)
+
+        with open(CACHE_TERM_FREQUENCIES, "rb") as f:
+            data = pickle.load(f)
+            self.term_frequencies = defaultdict(
+                Counter, data
+            )  # reconvert dict back to default dict

@@ -4,7 +4,7 @@ from lib.utils import load_stopwords
 from nltk.stem import PorterStemmer
 
 
-def tokenize_str(query: str) -> set[str]:
+def tokenize_str(query: str) -> list[str]:
     clean_query = remove_punctuation(query)
     clean_query = remove_stopwords(clean_query)
     return stemed_tokens(clean_query)
@@ -20,6 +20,6 @@ def remove_stopwords(query: str) -> list[str]:
     return [word for word in query.split() if word not in stopwords]
 
 
-def stemed_tokens(tokens: list[str]) -> set:
+def stemed_tokens(tokens: list[str]) -> list[str]:
     stemmer = PorterStemmer()
-    return set([stemmer.stem(word) for word in tokens])
+    return [stemmer.stem(word) for word in tokens]
