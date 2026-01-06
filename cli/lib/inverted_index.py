@@ -45,6 +45,25 @@ class InvertedIndex:
 
         return math.log((total_doc_count + 1) / (term_match_doc_count + 1))
 
+    def get_bm25_idf(self, term: str) -> float:
+        token = tokenize_single_str(term)
+        total_doc_count = len(self.docmap)
+        term_match_doc_count = len(self.index[token])
+
+        # BM25 Algorithm:
+        # N -> total number of docs
+        # df -> docs with the term
+        # (N - df) -> docs without term
+        # 0.5 -> laplace smoothing
+        # 1 -> ensures idf is always positve; handles edge cases
+        # log((N - df + 0.5) / (df + 0.5) + 1)
+        #
+        return math.log(
+            (total_doc_count - term_match_doc_count + 0.5)
+            / (term_match_doc_count + 0.5)
+            + 1
+        )
+
     def get_tf_idf(self, doc_id: int, term: str) -> float:
         tf = self.get_tf(doc_id, term)
         idf = self.get_idf(term)

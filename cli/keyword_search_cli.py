@@ -4,6 +4,7 @@ import textwrap
 
 from lib.search import (
     build_index,
+    calculate_bm25_idf,
     calculate_idf,
     calculate_tf,
     calculate_tf_idf,
@@ -43,6 +44,11 @@ def cmd_tf_idf(args: argparse.Namespace) -> None:
     calculate_tf_idf(args.doc_id, args.term)
 
 
+def cmd_bm25_idf(args: argparse.Namespace) -> None:
+    print(f"Calculation BM25-IDF for {args.term} ...")
+    calculate_bm25_idf(args.term)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Keyword search over the movie dataset. Build the index, run BM25 search, and inspect TF/IDF.",
@@ -53,6 +59,8 @@ def build_parser() -> argparse.ArgumentParser:
               keyword_search_cli.py search "the matrix"
               keyword_search_cli.py tf 42 matrix
               keyword_search_cli.py idf matrix
+              keyword_search_cli.py bmidf matrix
+
             """
         ),
         formatter_class=_HelpFmt,
@@ -65,7 +73,6 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(
         title="commands", dest="command", metavar="<command>", help="Available commands"
     )
-    # Leave subcommands optional so we can print help by default in main()
 
     # Search
     search_parser = subparsers.add_parser(
@@ -141,6 +148,23 @@ def build_parser() -> argparse.ArgumentParser:
     tfidf_parser.add_argument("doc_id", type=int, help="Document ID")
     tfidf_parser.add_argument("term", type=str, help="Term to evaluate")
     tfidf_parser.set_defaults(func=cmd_tf_idf)
+
+    # BM25-IDF (Okapi BM25 ranking function)
+    bm25_parser = subparsers.add_parser(
+        "bm25idf",
+        help="Show term frequency - inverse document frequency (TF-IDF) across the corpus",
+        formatter_class=_HelpFmt,
+        epilog=textwrap.dedent(
+            """\
+             Example:
+
+               keyword_search_cli.py bmidf matrix
+             """
+        ),
+    )
+
+    bm25_parser.add_argument("term", type=str, help="Term to evaluate")
+    bm25_parser.set_defaults(func=cmd_bm25_idf)
 
     return parser
 
