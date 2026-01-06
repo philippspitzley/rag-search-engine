@@ -1,8 +1,9 @@
+import math
 import pickle
 from collections import Counter, defaultdict
 
 from config import CACHE_DIR, CACHE_DOCMAP_PKL, CACHE_INDEX_PKL, CACHE_TERM_FREQUENCIES
-from lib.tokenize import tokenize_str
+from lib.tokenize import tokenize_single_str, tokenize_str
 from lib.utils import load_movies
 
 
@@ -29,20 +30,19 @@ class InvertedIndex:
         return sorted(documents_set)
 
     def get_tf(self, doc_id: int, term: str) -> int:
-        tokens = tokenize_str(term)
-
-        if len(tokens) == 1:
-            token = tokens[0]
-
-        if len(tokens) > 1:
-            raise ValueError("Only one word/token is allowed")
-
+        token = tokenize_single_str(term)
         document_counters = self.term_frequencies.get(doc_id)
 
         if document_counters is None:
             return 0
 
         return document_counters.get(token, 0)
+
+    def get_idf(self, term: str) -> float:
+        token = tokenize_single_str(term)
+        total_doc_count = len(self.docmap)
+        term_match_doc_count = len(self.index[token])
+        return math.log((total_doc_count + 1) / (term_match_doc_count + 1))
 
     def build(self) -> None:
         for movie in load_movies():

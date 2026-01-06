@@ -10,6 +10,15 @@ def tokenize_str(query: str) -> list[str]:
     return stemed_tokens(clean_query)
 
 
+def tokenize_single_str(term: str) -> str:
+    tokens = tokenize_str(term)
+
+    if len(tokens) != 1:
+        raise ValueError("Only one word/token is allowed")
+
+    return tokens[0]
+
+
 def remove_punctuation(query: str) -> str:
     punctuation_table = str.maketrans("", "", string.punctuation)
     return query.lower().translate(punctuation_table)

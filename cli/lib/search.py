@@ -31,6 +31,14 @@ def count_term(doc_id: int, term: str) -> None:
     print(f"Found {count} occurences for {term} in document {doc_id}!")
 
 
+def calculate_idf(term: str) -> None:
+    if not index_is_loaded:
+        load_index()
+
+    idf = search_index.get_idf(term)
+    print(f"Inverse document frequency of '{term}': {idf:.2f}")
+
+
 def index_search(query: str) -> list[str] | None:
     if not index_is_loaded:
         load_index()
