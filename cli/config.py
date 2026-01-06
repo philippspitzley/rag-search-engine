@@ -15,6 +15,7 @@ CACHE_TERM_FREQUENCIES = CACHE_DIR / "term_frequencies.pkl"
 
 # Search Settings
 MAX_SEARCH_RESULTS = 5
+BM25_K1 = 1.5
 
 # file_paths = [MOVIES_JSON, STOPWORDS_TXT, CACHE_INDEX_PKL, CACHE_DOCMAP_PKL]
 

@@ -2,9 +2,11 @@
 import argparse
 import textwrap
 
+from config import BM25_K1
 from lib.search import (
     build_index,
     calculate_bm25_idf,
+    calculate_bm25_tf,
     calculate_idf,
     calculate_tf,
     calculate_tf_idf,
@@ -44,6 +46,11 @@ def cmd_tf_idf(args: argparse.Namespace) -> None:
     calculate_tf_idf(args.doc_id, args.term)
 
 
+def cmd_bm25_tf(args: argparse.Namespace) -> None:
+    print(f"Calculating TF-IDF for {args.term} ...")
+    calculate_bm25_tf(args.doc_id, args.term, args.k1)
+
+
 def cmd_bm25_idf(args: argparse.Namespace) -> None:
     print(f"Calculation BM25-IDF for {args.term} ...")
     calculate_bm25_idf(args.term)
@@ -74,7 +81,10 @@ def build_parser() -> argparse.ArgumentParser:
         title="commands", dest="command", metavar="<command>", help="Available commands"
     )
 
+    ##########
     # Search
+    #######
+
     search_parser = subparsers.add_parser(
         "search",
         aliases=["s"],
@@ -93,13 +103,19 @@ def build_parser() -> argparse.ArgumentParser:
     search_parser.add_argument("query", type=str, help="Free-text query to search for")
     search_parser.set_defaults(func=cmd_search)
 
+    #########
     # Build
+    ######
+
     build_cmd = subparsers.add_parser(
         "build", aliases=["b"], help="Build the search index", formatter_class=_HelpFmt
     )
     build_cmd.set_defaults(func=cmd_build)
 
+    ######################
     # TF (Term Frequency)
+    ####################
+
     tf_parser = subparsers.add_parser(
         "tf",
         help="Show term frequency (TF) — count occurrences of a term in a single document",
@@ -116,7 +132,10 @@ def build_parser() -> argparse.ArgumentParser:
     tf_parser.add_argument("term", type=str, help="Term to count")
     tf_parser.set_defaults(func=cmd_tf)
 
+    ###################################
     # IDF (Inverse Document Frequency)
+    #################################
+
     idf_parser = subparsers.add_parser(
         "idf",
         help="Show inverse document frequency (IDF) across the corpus",
@@ -132,7 +151,10 @@ def build_parser() -> argparse.ArgumentParser:
     idf_parser.add_argument("term", type=str, help="Term to evaluate")
     idf_parser.set_defaults(func=cmd_idf)
 
-    # TF-IDF (Term Frequency-Inverse Document Frequency)
+    #######################################################
+    # TF-IDF (Term Frequency - Inverse Document Frequency)
+    #####################################################
+
     tfidf_parser = subparsers.add_parser(
         "tfidf",
         help="Show term frequency - inverse document frequency (TF-IDF) across the corpus",
@@ -149,22 +171,50 @@ def build_parser() -> argparse.ArgumentParser:
     tfidf_parser.add_argument("term", type=str, help="Term to evaluate")
     tfidf_parser.set_defaults(func=cmd_tf_idf)
 
-    # BM25-IDF (Okapi BM25 ranking function)
-    bm25_parser = subparsers.add_parser(
+    ################################
+    # Bm25-TF (BM25 Term Frequency)
+    ##############################
+
+    bm25_tf_parser = subparsers.add_parser(
+        "bm25tf",
+        help="Show term frequency - inverse document frequency (BM25-TF) across the corpus",
+        formatter_class=_HelpFmt,
+        epilog=textwrap.dedent(
+            """\
+            Example:
+
+              keyword_search_cli.py bm25tf inception 23
+              keyword_search_cli.py bm25tf inception 12 1.2
+
+            """
+        ),
+    )
+    bm25_tf_parser.add_argument("doc_id", type=int, help="Document ID")
+    bm25_tf_parser.add_argument("term", type=str, help="Term to evaluate")
+    bm25_tf_parser.add_argument(
+        "k1", type=float, nargs="?", default=BM25_K1, help="Tunable BM25 K1 parameter"
+    )
+    bm25_tf_parser.set_defaults(func=cmd_bm25_tf)
+
+    #############################################
+    # BM25-IDF (BM25 Inverse Document Frequency)
+    ###########################################
+
+    bm25_idf_parser = subparsers.add_parser(
         "bm25idf",
-        help="Show term frequency - inverse document frequency (TF-IDF) across the corpus",
+        help="Show term frequency - inverse document frequency (BM25-IDF) across the corpus",
         formatter_class=_HelpFmt,
         epilog=textwrap.dedent(
             """\
              Example:
 
-               keyword_search_cli.py bmidf matrix
+               keyword_search_cli.py bm25idf interstellar
              """
         ),
     )
 
-    bm25_parser.add_argument("term", type=str, help="Term to evaluate")
-    bm25_parser.set_defaults(func=cmd_bm25_idf)
+    bm25_idf_parser.add_argument("term", type=str, help="Term to evaluate")
+    bm25_idf_parser.set_defaults(func=cmd_bm25_idf)
 
     return parser
 

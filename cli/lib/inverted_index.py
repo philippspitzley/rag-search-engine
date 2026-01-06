@@ -2,7 +2,12 @@ import math
 import pickle
 from collections import Counter, defaultdict
 
-from config import CACHE_DIR, CACHE_DOCMAP_PKL, CACHE_INDEX_PKL, CACHE_TERM_FREQUENCIES
+from config import (
+    CACHE_DIR,
+    CACHE_DOCMAP_PKL,
+    CACHE_INDEX_PKL,
+    CACHE_TERM_FREQUENCIES,
+)
 from lib.tokenize import tokenize_single_str, tokenize_str
 from lib.utils import load_movies
 
@@ -45,6 +50,22 @@ class InvertedIndex:
 
         return math.log((total_doc_count + 1) / (term_match_doc_count + 1))
 
+    def get_tf_idf(self, doc_id: int, term: str) -> float:
+        tf = self.get_tf(doc_id, term)
+        idf = self.get_idf(term)
+
+        return tf * idf
+
+    def get_bm25_tf(self, doc_id: int, term: str, k1: float) -> float:
+        tf = self.get_tf(doc_id, term)
+
+        # BM25 Algorithm:
+        # tf -> total number of terms in doc
+        # k1 -> constant that controls diminishing returns
+        # (tf * (k1 + 1)) / (tf + k1)
+
+        return (tf * (k1 + 1)) / (tf + k1)
+
     def get_bm25_idf(self, term: str) -> float:
         token = tokenize_single_str(term)
         total_doc_count = len(self.docmap)
@@ -57,18 +78,12 @@ class InvertedIndex:
         # 0.5 -> laplace smoothing
         # 1 -> ensures idf is always positve; handles edge cases
         # log((N - df + 0.5) / (df + 0.5) + 1)
-        #
+
         return math.log(
             (total_doc_count - term_match_doc_count + 0.5)
             / (term_match_doc_count + 0.5)
             + 1
         )
-
-    def get_tf_idf(self, doc_id: int, term: str) -> float:
-        tf = self.get_tf(doc_id, term)
-        idf = self.get_idf(term)
-
-        return tf * idf
 
     def build(self) -> None:
         for movie in load_movies():

@@ -47,6 +47,14 @@ def calculate_tf_idf(doc_id: int, term: str) -> None:
     print(f"TF-IDF score of '{term}' in document '{doc_id}': {tf_idf:.2f}")
 
 
+def calculate_bm25_tf(doc_id: int, term: str, k1: float) -> None:
+    if not index_is_loaded:
+        load_index()
+
+    bm25_tf = search_index.get_bm25_tf(doc_id, term, k1)
+    print(f"BM25 TF score of '{term}' in document '{doc_id}': {bm25_tf:.2f}")
+
+
 def calculate_bm25_idf(term: str) -> None:
     if not index_is_loaded:
         load_index()
