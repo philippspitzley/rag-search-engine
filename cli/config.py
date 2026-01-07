@@ -9,9 +9,9 @@ STOPWORDS_TXT = DATA_DIR / "stopwords.txt"
 
 # Cache Files
 CACHE_DIR = PROJECT_ROOT / "cache"
-CACHE_INDEX_PKL = CACHE_DIR / "index.pkl"
-CACHE_DOCMAP_PKL = CACHE_DIR / "docmap.pkl"
-CACHE_TERM_FREQUENCIES = CACHE_DIR / "term_frequencies.pkl"
+CACHE_INDEX_FILE = CACHE_DIR / "index.pkl"
+CACHE_DOCMAP_FILE = CACHE_DIR / "docmap.pkl"
+CACHE_TF_FILE = CACHE_DIR / "term_frequencies.pkl"
 
 # Search Settings
 MAX_SEARCH_RESULTS = 5

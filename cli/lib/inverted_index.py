@@ -4,9 +4,9 @@ from collections import Counter, defaultdict
 
 from config import (
     CACHE_DIR,
-    CACHE_DOCMAP_PKL,
-    CACHE_INDEX_PKL,
-    CACHE_TERM_FREQUENCIES,
+    CACHE_DOCMAP_FILE,
+    CACHE_INDEX_FILE,
+    CACHE_TF_FILE,
 )
 from lib.tokenize import tokenize_single_str, tokenize_str
 from lib.utils import load_movies
@@ -17,6 +17,7 @@ class InvertedIndex:
         self.index: dict[str, set[int]] = defaultdict(set)
         self.docmap: dict[int, dict] = {}
         self.term_frequencies: dict[int, Counter[str]] = defaultdict(Counter)
+        self.doc_length = {}
 
     def __add_document(self, doc_id: int, text: str) -> None:
         tokens = tokenize_str(text)
@@ -94,31 +95,31 @@ class InvertedIndex:
     def save(self) -> None:
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-        with open(CACHE_INDEX_PKL, "wb") as f:
+        with open(CACHE_INDEX_FILE, "wb") as f:
             pickle.dump(dict(self.index), f)  # convert default dict to nomal dict
 
-        with open(CACHE_DOCMAP_PKL, "wb") as f:
+        with open(CACHE_DOCMAP_FILE, "wb") as f:
             pickle.dump(self.docmap, f)
 
-        with open(CACHE_TERM_FREQUENCIES, "wb") as f:
+        with open(CACHE_TF_FILE, "wb") as f:
             pickle.dump(
                 dict(self.term_frequencies), f
             )  # convert default dict to nomal dict
 
     def load(self) -> None:
-        if not CACHE_INDEX_PKL.exists() or not CACHE_DOCMAP_PKL.exists():
+        if not CACHE_INDEX_FILE.exists() or not CACHE_DOCMAP_FILE.exists():
             raise FileNotFoundError(
-                f"Files not found: {CACHE_INDEX_PKL}, {CACHE_DOCMAP_PKL}"
+                f"Files not found: {CACHE_INDEX_FILE}, {CACHE_DOCMAP_FILE}"
             )
 
-        with open(CACHE_INDEX_PKL, "rb") as f:
+        with open(CACHE_INDEX_FILE, "rb") as f:
             data = pickle.load(f)
             self.index = defaultdict(set, data)  # reconvert dict back to default dict
 
-        with open(CACHE_DOCMAP_PKL, "rb") as f:
+        with open(CACHE_DOCMAP_FILE, "rb") as f:
             self.docmap = pickle.load(f)
 
-        with open(CACHE_TERM_FREQUENCIES, "rb") as f:
+        with open(CACHE_TF_FILE, "rb") as f:
             data = pickle.load(f)
             self.term_frequencies = defaultdict(
                 Counter, data
