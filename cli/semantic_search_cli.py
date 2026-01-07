@@ -3,7 +3,7 @@ import argparse
 import textwrap
 
 from config import TRANSFORMER_MODEL
-from lib.semantic_search import verify_model
+from lib.semantic_search import embed_text, verify_model
 
 
 class _HelpFmt(
@@ -15,6 +15,11 @@ class _HelpFmt(
 def cmd_verify_model(args: argparse.Namespace) -> None:
     print("Verify transformer model ...")
     verify_model(TRANSFORMER_MODEL)
+
+
+def cmd_embed_text(args: argparse.Namespace) -> None:
+    print("Embedding text ...")
+    embed_text(args.text)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -40,9 +45,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Available commands",
     )
 
-    ##########
-    # Semantic-Search
-    #######
+    ###############
+    # Verify Model
+    ############
 
     semantic_search_parser = subparsers.add_parser(
         "verify",
@@ -62,6 +67,33 @@ def build_parser() -> argparse.ArgumentParser:
 
     semantic_search_parser.set_defaults(func=cmd_verify_model)
 
+    #############
+    # Embed Text
+    ##########
+
+    embed_text_parser = subparsers.add_parser(
+        "embed_text",
+        aliases=["et"],
+        help="Embed text.",
+        description="embed text",
+        formatter_class=_HelpFmt,
+        epilog=textwrap.dedent(
+            """\
+            Examples:
+
+              keyword_search_cli.py search "matrix"
+              keyword_search_cli.py s inception
+            """
+        ),
+    )
+
+    embed_text_parser.add_argument(
+        "text",
+        type=str,
+        help="text to embed",
+    )
+
+    embed_text_parser.set_defaults(func=cmd_embed_text)
     return parser
 
 
