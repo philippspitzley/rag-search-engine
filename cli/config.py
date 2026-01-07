@@ -18,3 +18,6 @@ CACHE_DOC_LENGTH_FILE = CACHE_DIR / "doc_lengths.pkl"
 MAX_SEARCH_RESULTS = 5
 BM25_K1 = 1.5
 BM25_B = 0.75
+
+# Semantic Search Settings
+TRANSFORMER_MODEL = "all-MiniLM-L6-v2"
