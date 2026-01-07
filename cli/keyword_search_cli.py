@@ -2,8 +2,9 @@
 import argparse
 import textwrap
 
-from config import BM25_K1
+from config import BM25_B, BM25_K1, MAX_SEARCH_RESULTS
 from lib.search import (
+    bm25_search,
     build_index,
     calculate_bm25_idf,
     calculate_bm25_tf,
@@ -23,6 +24,11 @@ class _HelpFmt(
 def cmd_search(args: argparse.Namespace) -> None:
     print(f"Searching for: {args.query}")
     search(args.query)
+
+
+def cmd_bm25_search(args: argparse.Namespace) -> None:
+    print(f"Searching for: {args.query}")
+    bm25_search(args.query, args.limit, BM25_K1, BM25_B)
 
 
 def cmd_build(_: argparse.Namespace) -> None:
@@ -48,7 +54,7 @@ def cmd_tf_idf(args: argparse.Namespace) -> None:
 
 def cmd_bm25_tf(args: argparse.Namespace) -> None:
     print(f"Calculating TF-IDF for {args.term} ...")
-    calculate_bm25_tf(args.doc_id, args.term, args.k1)
+    calculate_bm25_tf(args.doc_id, args.term, args.k1, args.b)
 
 
 def cmd_bm25_idf(args: argparse.Namespace) -> None:
@@ -95,13 +101,50 @@ def build_parser() -> argparse.ArgumentParser:
             """\
             Examples:
 
-              keyword_search_cli.py search "the matrix"
+              keyword_search_cli.py search "matrix"
               keyword_search_cli.py s inception
             """
         ),
     )
-    search_parser.add_argument("query", type=str, help="Free-text query to search for")
+    search_parser.add_argument(
+        "query",
+        type=str,
+        help="Free-text query to search for",
+    )
     search_parser.set_defaults(func=cmd_search)
+
+    ##########
+    # BM25-Search
+    #######
+
+    bm25_search_parser = subparsers.add_parser(
+        "bm25search",
+        aliases=["bms"],
+        help="Search movies using full BM25 scoring.",
+        description="Search the corpus using full BM25 scoring",
+        formatter_class=_HelpFmt,
+        epilog=textwrap.dedent(
+            """\
+             Examples:
+
+               keyword_search_cli.py bm25search "love story"
+               keyword_search_cli.py bms "action bear"
+             """
+        ),
+    )
+    bm25_search_parser.add_argument(
+        "query",
+        type=str,
+        help="Free-text query to search for",
+    )
+    bm25_search_parser.add_argument(
+        "limit",
+        type=int,
+        nargs="?",
+        default=MAX_SEARCH_RESULTS,
+        help="Free-text query to search for",
+    )
+    bm25_search_parser.set_defaults(func=cmd_bm25_search)
 
     #########
     # Build
@@ -192,7 +235,18 @@ def build_parser() -> argparse.ArgumentParser:
     bm25_tf_parser.add_argument("doc_id", type=int, help="Document ID")
     bm25_tf_parser.add_argument("term", type=str, help="Term to evaluate")
     bm25_tf_parser.add_argument(
-        "k1", type=float, nargs="?", default=BM25_K1, help="Tunable BM25 K1 parameter"
+        "k1",
+        type=float,
+        nargs="?",
+        default=BM25_K1,
+        help="Tunable BM25 K1 parameter to control diminishing return for higher term frequencies",
+    )
+    bm25_tf_parser.add_argument(
+        "b",
+        type=float,
+        nargs="?",
+        default=BM25_B,
+        help="Tunable BM25 B parameter to control document length nomalization",
     )
     bm25_tf_parser.set_defaults(func=cmd_bm25_tf)
 
@@ -213,7 +267,11 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    bm25_idf_parser.add_argument("term", type=str, help="Term to evaluate")
+    bm25_idf_parser.add_argument(
+        "term",
+        type=str,
+        help="Term to evaluate",
+    )
     bm25_idf_parser.set_defaults(func=cmd_bm25_idf)
 
     return parser

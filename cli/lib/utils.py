@@ -17,6 +17,12 @@ def load_stopwords() -> list[str]:
     return stop_words
 
 
-def print_search_results(movies: list[str]) -> None:
-    for i, movie in enumerate(movies, 1):
-        print(f"{i}. {movie}")
+def print_search_results(
+    movies: list[str] | list[tuple[str, int]], bm25: bool = False
+) -> None:
+    if bm25:
+        for i, (doc_id, movie, score) in enumerate(movies, 1):
+            print(f"{i}. ({doc_id}) {movie} - Score: {score:.2f}")
+    else:
+        for i, movie in enumerate(movies, 1):
+            print(f"{i}. ({movie})")

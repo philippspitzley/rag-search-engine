@@ -8,11 +8,35 @@ index_is_loaded = False
 
 
 def search(query: str) -> None:
-    search_results = index_search(query)
+    if not index_is_loaded:
+        load_index()
+
+    search_results = []
+    index_results = search_index.get_documents(query)
+    for doc_id in index_results[:MAX_SEARCH_RESULTS]:
+        search_results.append(search_index.docmap[doc_id]["title"])
+
     if not search_results:
         print("Nothing found")
     else:
         print_search_results(search_results)
+
+
+def bm25_search(query: str, limit: int, k1: float, b: float) -> None:
+    if not index_is_loaded:
+        load_index()
+
+    search_results: list[tuple[int, str, float]] = []
+    index_results = search_index.bm25_search(query, limit, k1, b)
+    for doc_id, bm25_score in index_results.items():
+        search_results.append(
+            (doc_id, search_index.docmap[doc_id]["title"], bm25_score)
+        )
+
+    if not search_results:
+        print("Nothing found")
+    else:
+        print_search_results(search_results[:MAX_SEARCH_RESULTS], bm25=True)
 
 
 def build_index() -> None:
@@ -47,11 +71,11 @@ def calculate_tf_idf(doc_id: int, term: str) -> None:
     print(f"TF-IDF score of '{term}' in document '{doc_id}': {tf_idf:.2f}")
 
 
-def calculate_bm25_tf(doc_id: int, term: str, k1: float) -> None:
+def calculate_bm25_tf(doc_id: int, term: str, k1: float, b: float) -> None:
     if not index_is_loaded:
         load_index()
 
-    bm25_tf = search_index.get_bm25_tf(doc_id, term, k1)
+    bm25_tf = search_index.get_bm25_tf(doc_id, term, k1, b)
     print(f"BM25 TF score of '{term}' in document '{doc_id}': {bm25_tf:.2f}")
 
 
@@ -69,8 +93,8 @@ def index_search(query: str) -> list[str] | None:
 
     results = []
     index_results = search_index.get_documents(query)
-    for index in index_results[:MAX_SEARCH_RESULTS]:
-        results.append(search_index.docmap[index]["title"])
+    for doc_id in index_results[:MAX_SEARCH_RESULTS]:
+        results.append(search_index.docmap[doc_id]["title"])
 
     return results
 

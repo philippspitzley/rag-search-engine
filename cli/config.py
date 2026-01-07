@@ -12,13 +12,9 @@ CACHE_DIR = PROJECT_ROOT / "cache"
 CACHE_INDEX_FILE = CACHE_DIR / "index.pkl"
 CACHE_DOCMAP_FILE = CACHE_DIR / "docmap.pkl"
 CACHE_TF_FILE = CACHE_DIR / "term_frequencies.pkl"
+CACHE_DOC_LENGTH_FILE = CACHE_DIR / "doc_lengths.pkl"
 
 # Search Settings
 MAX_SEARCH_RESULTS = 5
 BM25_K1 = 1.5
-
-# file_paths = [MOVIES_JSON, STOPWORDS_TXT, CACHE_INDEX_PKL, CACHE_DOCMAP_PKL]
-
-# for file in file_paths:
-#     if not file.exists():
-#         raise FileNotFoundError(f"Data directory not found: {file}")
+BM25_B = 0.75
